@@ -3,6 +3,7 @@ using OrderFlow.Api.Dtos;
 using OrderFlow.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using OrderFlow.Api.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OrderFlow.Api.Controllers;
 
@@ -43,6 +44,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Product>> CreateProduct(
     CreateProductRequest request)
     {
@@ -65,6 +67,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin")]
 
     public async Task<ActionResult<Product>> UpdateProduct(int id,
         UpdateProductRequest updateRequest
@@ -92,6 +95,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
         var product = await _dbContext.Products.FindAsync(id);
