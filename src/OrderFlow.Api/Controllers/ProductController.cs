@@ -1,40 +1,35 @@
 using Microsoft.AspNetCore.Mvc;
 using OrderFlow.Api.Dtos;
 using OrderFlow.Api.Models;
+using Microsoft.EntityFrameworkCore;
+using OrderFlow.Api.Data;
 
 namespace OrderFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/products")]
-public class ProductController : ControllerBase
+public class ProductsController : ControllerBase
 {
-    private static readonly List<Product> Products =
-    [
-        new Product
-        {
-            Id = 1,
-            Name = "Mechanical Keyboard",
-            Price = 4999.00m,
-            StockQuantity = 10
-        },
-        new Product
-        {
-            Id = 2,
-            Name = "Wireless Mouse",
-            Price = 1999.00m,
-            StockQuantity = 25
-        }
-    ];
+    private readonly OrderFlowDbContext _dbContext;
+
+    public ProductsController(OrderFlowDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
 
     [HttpGet]
-    public ActionResult<List<Product>> GetProducts()
+    public async Task<ActionResult<List<Product>>> GetProducts()
     {
-        return Ok(Products);
+        var products = await _dbContext.Products
+            .AsNoTracking()
+            .ToListAsync();
+
+        return Ok(products);
     }
     [HttpGet("{id:int}")]
-    public ActionResult<Product> GetProductById(int id)
+    public async Task<ActionResult<Product>> GetProductById(int id)
     {
-        var product = Products.FirstOrDefault(p => p.Id == id);
+        var product = await _dbContext.Products.FindAsync(id);
 
         if (product is null)
         {
@@ -48,15 +43,24 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Product> CreateProduct(CreateProductRequest request)
+    public async Task<ActionResult<Product>> CreateProduct(
+    CreateProductRequest request)
     {
         var product = new Product
         {
-            Id = Products.Count == 0 ? 1 : Products.Max(p => p.Id) + 1,
             Name = request.Name,
             Price = request.Price,
             StockQuantity = request.StockQuantity
         };
-        return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
+
+        _dbContext.Products.Add(product);
+
+        await _dbContext.SaveChangesAsync();
+
+        return CreatedAtAction(
+            nameof(GetProductById),
+            new { id = product.Id },
+            product
+        );
     }
 }

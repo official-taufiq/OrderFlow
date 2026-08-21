@@ -1,6 +1,14 @@
+using Microsoft.EntityFrameworkCore;
+using OrderFlow.Api.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection");
 // Add services to the container.
+
+builder.Services.AddDbContext<OrderFlowDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
