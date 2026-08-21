@@ -63,4 +63,51 @@ public class ProductsController : ControllerBase
             product
         );
     }
+
+    [HttpPut("{id:int}")]
+
+    public async Task<ActionResult<Product>> UpdateProduct(int id,
+        UpdateProductRequest updateRequest
+    )
+    {
+        var product = await _dbContext.Products.FindAsync(id);
+
+        if (product is null)
+        {
+            return NotFound(
+                new
+                {
+                    message = "Product not found"
+                }
+            );
+        }
+        product.Name = updateRequest.Name;
+        product.Price = updateRequest.Price;
+        product.StockQuantity = updateRequest.StockQuantity;
+
+        await _dbContext.SaveChangesAsync();
+
+        return NoContent();
+
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteProduct(int id)
+    {
+        var product = await _dbContext.Products.FindAsync(id);
+
+        if (product is null)
+        {
+            return NotFound(new
+            {
+                message = "Product not found"
+            });
+        }
+
+        _dbContext.Products.Remove(product);
+
+        await _dbContext.SaveChangesAsync();
+
+        return NoContent();
+    }
 }

@@ -1,11 +1,10 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace OrderFlow.Api.Models;
+namespace OrderFlow.Api.Dtos;
 
-public class Product
+public class UpdateProductRequest
 {
-    public int Id { get; set; }
-
     [Required]
     [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
@@ -15,6 +14,4 @@ public class Product
 
     [Range(0, int.MaxValue)]
     public int StockQuantity { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
