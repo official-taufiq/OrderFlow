@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OrderFlow.Api.Dtos;
 using OrderFlow.Api.Models;
 
 namespace OrderFlow.Api.Controllers;
@@ -44,5 +45,18 @@ public class ProductController : ControllerBase
         }
 
         return Ok(product);
+    }
+
+    [HttpPost]
+    public ActionResult<Product> CreateProduct(CreateProductRequest request)
+    {
+        var product = new Product
+        {
+            Id = Products.Count == 0 ? 1 : Products.Max(p => p.Id) + 1,
+            Name = request.Name,
+            Price = request.Price,
+            StockQuantity = request.StockQuantity
+        };
+        return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
     }
 }
