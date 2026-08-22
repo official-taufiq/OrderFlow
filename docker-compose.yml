@@ -21,5 +21,21 @@ services:
     ports:
       - "5433:5432"
 
+  api:
+    build:
+      context: .
+      dockerfile: src/OrderFlow.Api/Dockerfile
+    container_name: orderflow-api
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=orderflow;Username=orderflow;Password=orderflow
+      Jwt__Key: orderflow-local-docker-secret-key-change-me
+      Jwt__Issuer: OrderFlow
+      Jwt__Audience: OrderFlow
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
 volumes:
   orderflow-postgres-data:

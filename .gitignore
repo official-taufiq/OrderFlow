@@ -480,3 +480,23 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+# .NET
+bin/
+obj/
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Environment / secrets
+.env
+appsettings.Development.json
+
+# Test output
+TestResults/
+
+# OS
+.DS_Store
+Thumbs.db
