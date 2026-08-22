@@ -4,17 +4,6 @@ OrderFlow is an order management REST API built with **ASP.NET Core, C#, Entity 
 
 It supports authentication, role-based authorization, product management, transactional order processing, and concurrency-safe inventory updates.
 
-## Tech Stack
-
-- .NET 10 / ASP.NET Core
-- C#
-- Entity Framework Core
-- PostgreSQL
-- JWT Authentication
-- BCrypt
-- Docker Compose
-- xUnit
-
 ## Features
 
 - User registration and login
