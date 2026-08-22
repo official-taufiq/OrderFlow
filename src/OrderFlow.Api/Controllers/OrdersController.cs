@@ -178,4 +178,113 @@ public class OrderControllers : ControllerBase
 
         return Ok(response);
     }
+    [HttpGet("me")]
+    public async Task<ActionResult<List<OrderResponse>>> GetMyOrders()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var orders = await _dbContext.Orders
+            .AsNoTracking()
+            .Where(o => o.UserId == userId)
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+
+        var response = orders.Select(order => new OrderResponse
+        {
+            Id = order.Id,
+            Status = order.Status,
+            TotalAmount = order.TotalAmount,
+            CreatedAt = order.CreatedAt,
+
+            Items = order.Items.Select(item => new OrderItemResponse
+            {
+                ProductId = item.ProductId,
+                ProductName = item.Product.Name,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice
+            }).ToList()
+        }).ToList();
+
+        return Ok(response);
+    }
+    [HttpGet]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<List<OrderResponse>>> GetAllOrders()
+    {
+        var orders = await _dbContext.Orders
+            .AsNoTracking()
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+
+        var response = orders.Select(order => new OrderResponse
+        {
+            Id = order.Id,
+            Status = order.Status,
+            TotalAmount = order.TotalAmount,
+            CreatedAt = order.CreatedAt,
+
+            Items = order.Items.Select(item => new OrderItemResponse
+            {
+                ProductId = item.ProductId,
+                ProductName = item.Product.Name,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice
+            }).ToList()
+        }).ToList();
+
+        return Ok(response);
+    }
+    [HttpPatch("{id:int}/status")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateOrderStatus(
+    int id,
+    UpdateOrderStatusRequest request)
+    {
+        var allowedStatuses = new[]
+        {
+        "Pending",
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Cancelled"
+    };
+
+        if (!allowedStatuses.Contains(
+                request.Status,
+                StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest(new
+            {
+                message = "Invalid order status"
+            });
+        }
+
+        var order = await _dbContext.Orders.FindAsync(id);
+
+        if (order is null)
+        {
+            return NotFound(new
+            {
+                message = "Order not found"
+            });
+        }
+
+        order.Status = allowedStatuses.First(
+            status => status.Equals(
+                request.Status,
+                StringComparison.OrdinalIgnoreCase));
+
+        await _dbContext.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
