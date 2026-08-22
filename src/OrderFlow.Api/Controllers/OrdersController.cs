@@ -15,10 +15,11 @@ namespace OrderFlow.Api.Controllers;
 public class OrderControllers : ControllerBase
 {
     private readonly OrderFlowDbContext _dbContext;
-
-    public OrderControllers(OrderFlowDbContext dbContext)
+    private readonly ILogger<OrderControllers> _logger;
+    public OrderControllers(OrderFlowDbContext dbContext, ILogger<OrderControllers> logger)
     {
         _dbContext = dbContext;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -107,6 +108,12 @@ public class OrderControllers : ControllerBase
             await _dbContext.SaveChangesAsync();
 
             await transaction.CommitAsync();
+            _logger.LogInformation(
+                "Order {OrderId} created by user {UserId} with total {TotalAmount}",
+                order.Id,
+                userId,
+                order.TotalAmount
+            );
 
             var response = new OrderResponse
             {
