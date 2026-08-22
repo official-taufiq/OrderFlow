@@ -32,6 +32,16 @@ public class OrderControllers : ControllerBase
             return Unauthorized();
         }
 
+        var requestedItems = request.Items
+            .GroupBy(i => i.ProductId)
+            .Select(g => new
+            {
+                ProductId = g.Key,
+                Quantity = g.Sum(i => i.Quantity)
+            })
+            .OrderBy(i => i.ProductId)
+            .ToList();
+
         await using var transaction =
             await _dbContext.Database.BeginTransactionAsync();
 
@@ -45,11 +55,17 @@ public class OrderControllers : ControllerBase
 
             decimal totalAmount = 0;
 
-            foreach (var requestedItem in request.Items)
+            foreach (var requestedItem in requestedItems)
             {
                 var product = await _dbContext.Products
-                    .FirstOrDefaultAsync(
-                        p => p.Id == requestedItem.ProductId);
+                    .FromSqlInterpolated(
+                        $"""
+            SELECT *
+            FROM "Products"
+            WHERE "Id" = {requestedItem.ProductId}
+            FOR UPDATE
+            """)
+                    .SingleOrDefaultAsync();
 
                 if (product is null)
                 {
@@ -74,6 +90,7 @@ public class OrderControllers : ControllerBase
                 var orderItem = new OrderItem
                 {
                     ProductId = product.Id,
+                    Product = product,
                     Quantity = requestedItem.Quantity,
                     UnitPrice = product.Price
                 };
