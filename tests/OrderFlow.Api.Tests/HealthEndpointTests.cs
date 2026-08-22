@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Mvc.Testing;
 namespace OrderFlow.Api.Tests;
 
 public class HealthEndpointTests
-    : IClassFixture<WebApplicationFactory<Program>>
+    : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
     public HealthEndpointTests(
-        WebApplicationFactory<Program> factory)
+        CustomWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }

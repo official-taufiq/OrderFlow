@@ -5,13 +5,14 @@ using OrderFlow.Api.Dtos;
 
 namespace OrderFlow.Api.Tests;
 
+[Collection("Integration")]
 public class ProductAuthorizationTests
-    : IClassFixture<WebApplicationFactory<Program>>
+    : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
     public ProductAuthorizationTests(
-        WebApplicationFactory<Program> factory)
+        CustomWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }
